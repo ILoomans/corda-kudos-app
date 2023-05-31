@@ -31,18 +31,16 @@ class KudosContract: Contract {
         when(command) {
             // Rules applied only to transactions with the Create Command.
             is KudosCommand.Issue -> {
-//                "When command is Vote there should be one and only one output state." using (transaction.outputContractStates.size == 1)
+                // Only two people should receive the kudos
                 "Only two participants for an an issued Kudos" using (transaction.outputContractStates.first().participants.size==2)
+                val output = transaction.outputContractStates.single() as KudosState
+                // Cannot give award kudos to yourself
+                "Cannot give the kudos to yourself" using(!transaction.signatories.contains(output.owner))
 //                "Owner should be one of the participants of the Kudos" using (transaction.outputContractStates.first().owner)
             }
             is KudosCommand.Spend -> {
-//                "When command is Create there should be no input states." using (transaction.inputContractStates.isEmpty())
-//                "When command is Create there should be one and only one output state." using (transaction.outputContractStates.size == 1)
                 val input = transaction.inputContractStates.single() as KudosState
-                // When changing to public key we need to check they have the right to spend
-                // input.owner
-
-                // Check the signatories transaction.signatories
+                // Check the signatories transaction.signatories, make sure that the owner of the kudos is a signer
                 "Owner of the kudos must be a signatory" using transaction.signatories.contains(input.owner)
 
             }

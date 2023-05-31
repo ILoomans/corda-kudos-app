@@ -18,7 +18,7 @@ import java.util.*
 // that the underlying Jackson serializer recognises, hence creating a DTO style object which consists only of Strings
 // and a UUID. It is possible to create custom serializers for the JsonMarshallingService, but this beyond the scope
 // of this simple example.
-data class KudosStateResult(val id: UUID, val owner: PublicKey)
+data class KudosStateResult(val id: UUID, val owner: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class ListKudosFlow : ClientStartableFlow {
@@ -44,7 +44,7 @@ class ListKudosFlow : ClientStartableFlow {
         val results = states.map {
             KudosStateResult(
                 it.state.contractState.id,
-                it.state.contractState.owner)
+                it.state.contractState.owner.toString())
         }
 
         // Uses the JsonMarshallingService's format() function to serialize the DTO to Json.
