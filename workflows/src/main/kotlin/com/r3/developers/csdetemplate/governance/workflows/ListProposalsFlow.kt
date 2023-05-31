@@ -18,7 +18,7 @@ import java.util.*
 // that the underlying Jackson serializer recognises, hence creating a DTO style object which consists only of Strings
 // and a UUID. It is possible to create custom serializers for the JsonMarshallingService, but this beyond the scope
 // of this simple example.
-data class ProposalStateResult(val id: UUID, val proposalName: String, val proposer: MemberX500Name, val favour: Int, val oppose: Int)
+data class ProposalStateResult(val id: UUID, val proposalName: String, val proposer: String, val favour: Int, val oppose: Int)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class ListProposalsFlow : ClientStartableFlow {
@@ -45,7 +45,7 @@ class ListProposalsFlow : ClientStartableFlow {
             ProposalStateResult(
                 it.state.contractState.id,
                 it.state.contractState.proposalName,
-                it.state.contractState.proposer,
+                it.state.contractState.proposer.toString(),
                 it.state.contractState.favour,
                 it.state.contractState.oppose
                 )

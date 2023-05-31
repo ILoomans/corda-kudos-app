@@ -1,5 +1,6 @@
 package com.r3.developers.csdetemplate.utxoexample.contracts
 
+import com.r3.developers.csdetemplate.utxoexample.states.KudosState
 import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.Command
@@ -33,6 +34,12 @@ class ProposalContract: Contract {
             // Rules applied only to transactions with the Create Command.
             is ProposalCommand.Propose -> {
                 // TODO: Add appropriate commands here
+                val input = transaction.inputContractStates.single() as ProposalState
+
+                // make sure that favour and oppose is set to 0
+                "Favour should be set to 0" using (input.favour==0)
+                "Oppose should be set to 0" using (input.oppose==0)
+
 //                "When command is Create there should be no input states." using (transaction.inputContractStates.isEmpty())
 //                "When command is Create there should be one and only one output state." using (transaction.outputContractStates.size == 1)
             }

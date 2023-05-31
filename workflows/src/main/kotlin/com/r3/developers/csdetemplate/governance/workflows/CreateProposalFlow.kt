@@ -56,7 +56,8 @@ class CreateProposalFlow: ClientStartableFlow {
             }
             val proposalState = ProposalState(
                 proposalName = flowArgs.name,
-                proposer= myInfo.name,
+                // this should be the publickey
+                proposer= myInfo.ledgerKeys.first(),
                 favour= 0,
                 oppose= 0,
                 participants = keys

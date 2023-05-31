@@ -15,7 +15,7 @@ data class ProposalState(
     // Non-unique name of the proposal
     val proposalName: String,
     // Proposal Maker
-    val proposer: MemberX500Name,
+    val proposer: PublicKey,
     // For
     val favour: Int,
     // Opposed
