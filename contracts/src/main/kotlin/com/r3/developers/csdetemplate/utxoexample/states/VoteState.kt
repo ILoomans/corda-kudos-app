@@ -27,12 +27,4 @@ data class VoteState(
         return participants
     }
 
-    fun voteInFavour(weight: Int): VoteState {
-        return copy(favour = favour + weight)
-    }
-
-    fun voteInOpposition(weight: Int): VoteState {
-        return copy(oppose = oppose + weight)
-    }
-
 }

@@ -27,7 +27,6 @@ data class ProposalState(
     override fun getParticipants(): List<PublicKey> {
         return participants
     }
-
     fun setVotes(favour: Int, oppose: Int): ProposalState {
         return copy(favour = favour, oppose=oppose)
     }

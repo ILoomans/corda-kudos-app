@@ -9,6 +9,7 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.types.MemberX500Name
 import net.corda.v5.ledger.utxo.UtxoLedgerService
 import org.slf4j.LoggerFactory
+import java.security.PublicKey
 import java.util.*
 
 
@@ -17,7 +18,7 @@ import java.util.*
 // that the underlying Jackson serializer recognises, hence creating a DTO style object which consists only of Strings
 // and a UUID. It is possible to create custom serializers for the JsonMarshallingService, but this beyond the scope
 // of this simple example.
-data class KudosStateResult(val id: UUID, val owner: MemberX500Name)
+data class KudosStateResult(val id: UUID, val owner: PublicKey)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class ListKudosFlow : ClientStartableFlow {

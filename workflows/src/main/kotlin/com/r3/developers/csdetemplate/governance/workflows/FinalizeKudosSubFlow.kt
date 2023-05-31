@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 
-// @InitiatingFlow declares the protocol which will be used to link the initiator to the responder.
 @InitiatingFlow(protocol = "finalize-kudos-protocol")
 class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction, private val otherMember: MemberX500Name): SubFlow<String> {
 
@@ -57,7 +56,6 @@ class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction,
     }
 }
 
-// See Chat CorDapp Design section of the getting started docs for a description of this flow.
 
 //@InitiatingBy declares the protocol which will be used to link the initiator to the responder.
 @InitiatedBy(protocol = "finalize-kudos-protocol")
@@ -82,7 +80,6 @@ class FinalizeKudosResponderFlow: ResponderFlow {
             // responder should sign the Transaction.
             val finalizedSignedTransaction = ledgerService.receiveFinality(session) { ledgerTransaction ->
 
-                // Note, this exception will only be shown in the logs if Corda Logging is set to debug.
                 ledgerTransaction.getOutputStates(KudosState::class.java).singleOrNull() ?:
                 throw CordaRuntimeException("Failed verification - transaction did not have exactly one output ChatState.")
 

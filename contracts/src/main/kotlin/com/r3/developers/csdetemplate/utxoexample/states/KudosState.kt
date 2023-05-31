@@ -31,9 +31,11 @@ import kotlin.collections.LinkedHashMap
 @BelongsToContract(KudosContract::class)
 data class KudosState(
     // Unique identifier for the chat.
+    // Remove uid
     val id: UUID = UUID.randomUUID(),
     //A map from the user to the amount of kudos that they have
-    val owner: MemberX500Name,
+    // Change to public key
+    val owner: PublicKey,
     //The participants to the chat,represented by their publickey.
     private val participants: List<PublicKey>): ContractState {
 

@@ -1,5 +1,6 @@
 package com.r3.developers.csdetemplate.governance.workflows
 
+import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import com.r3.developers.csdetemplate.utxoexample.states.VoteState
 import net.corda.v5.application.flows.*
 import net.corda.v5.application.messaging.FlowMessaging
@@ -85,7 +86,7 @@ class FinalizeVoteReconciliationResponderFlow: ResponderFlow {
             val finalizedSignedTransaction = ledgerService.receiveFinality(session) { ledgerTransaction ->
 
                 // Note, this exception will only be shown in the logs if Corda Logging is set to debug.
-                ledgerTransaction.getOutputStates(VoteState::class.java).singleOrNull() ?:
+                ledgerTransaction.getOutputStates(ProposalState::class.java).singleOrNull() ?:
                 throw CordaRuntimeException("Failed verification - transaction did not have exactly one output VoteState.")
 
                 log.info("Verified the transaction- ${ledgerTransaction.id}")

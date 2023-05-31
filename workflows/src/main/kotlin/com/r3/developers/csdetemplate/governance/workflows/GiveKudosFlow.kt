@@ -1,6 +1,7 @@
 package com.r3.developers.csdetemplate.governance.workflows
 
 import com.r3.developers.csdetemplate.governance.workflows.FinalizeKudosSubFlow
+import com.r3.developers.csdetemplate.utxoexample.contracts.KudosCommand
 import com.r3.developers.csdetemplate.utxoexample.contracts.KudosContract
 import com.r3.developers.csdetemplate.utxoexample.states.KudosState
 import net.corda.v5.application.flows.*
@@ -63,7 +64,7 @@ class GiveKudosFlow: ClientStartableFlow {
             throw CordaRuntimeException("MemberLookup can't find otherMember specified in flow arguments.")
             // This is creating the kudos state
             val kudosState = KudosState(
-                owner = otherMember.name,
+                owner = otherMember.ledgerKeys.first(),
                 participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
             )
             // Obtain the notary.
@@ -74,7 +75,7 @@ class GiveKudosFlow: ClientStartableFlow {
                 .setNotary(notary.name)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(kudosState)
-                .addCommand(KudosContract.Create())
+                .addCommand(KudosCommand.Issue)
                 .addSignatories(kudosState.participants)
             // Convert the transaction builder to a UTXOSignedTransaction. Verifies the content of the
             // UtxoTransactionBuilder and signs the transaction with any required signatories that belong to

@@ -1,63 +1,35 @@
 package com.r3.developers.csdetemplate.utxoexample.contracts
-
-import com.r3.developers.csdetemplate.utxoexample.states.KudosState
-import com.r3.developers.csdetemplate.utxoexample.states.VoteState
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.Command
 import net.corda.v5.ledger.utxo.Contract
 import net.corda.v5.ledger.utxo.transaction.UtxoLedgerTransaction
 
+
+sealed class VoteCommand: Command {
+    object Vote : VoteCommand()
+
+    object Spend: VoteCommand()
+}
 class VoteContract: Contract {
 
-    // Command Class used to indicate that the transaction should start a new chat.
-    class Create: Command
-    // Command Class used to indicate that the transaction should append a new ChatState to an existing chat.
-    class Update: Command
-
-    class Vote: Command
 
     // verify() function is used to apply contract rules to the transaction.
     override fun verify(transaction: UtxoLedgerTransaction) {
-
         // Ensures that there is only one command in the transaction
-        val command = transaction.commands.singleOrNull() ?: throw CordaRuntimeException("Requires a single command.")
+        val command = transaction.commands.filterIsInstance<VoteCommand>().single()
 
-        // Applies a universal constraint (applies to all transactions irrespective of command)
-        "The output state should have two and only two participants." using {
-            val output = transaction.outputContractStates.first() as VoteState
-            output.participants.size== 2
-        }
         // Switches case based on the command
         when(command) {
             // Rules applied only to transactions with the Create Command.
-            is Vote -> {
-                // There should be only one contract output state
-                // all input state should be a kudos state
-//                "All input states must be a kudos" using (transaction.inputContractStates.filterIsInstance<KudosState>().size===transaction.inputContractStates.size)
-//                "When command is Vote output state should be 1" using (transaction.outputContractStates.size==1)
-//                "Voting power must be equal to the amount of kudos spent" using {
-//                    val output = transaction.outputContractStates.first() as VoteState
-//                    output.favour + output.oppose == transaction.inputStateAndRefs.size
-//                }
+            is VoteCommand.Vote -> {
+                // TODO: ADD VOTE CONSTRAINTS
             }
-            is Create -> {
-                "When command is Create there should be no input states." using (transaction.inputContractStates.isEmpty())
-                "When command is Create there should be one and only one output state." using (transaction.outputContractStates.size == 1)
+            is VoteCommand.Spend -> {
+                // TODO: ADD SPEND CONSTRAINTS
             }
-            // Rules applied only to transactions with the Update Command.
-            is Update -> {
-                "When command is Update there should be one and only one input state." using (transaction.inputContractStates.size == 1)
-                "When command is Update there should be one and only one output state." using (transaction.outputContractStates.size == 1)
 
-                val input = transaction.inputContractStates.single() as VoteState
-                val output = transaction.outputContractStates.single() as VoteState
-                "When command is Update id must not change." using (input.id == output.id)
-//                "When command is Update chatName must not change." using (input.chatName == output.chatName)
-                "When command is Update participants must not change." using (
-                        input.participants.toSet().intersect(output.participants.toSet()).size == 2)
-            }
             else -> {
-//                throw CordaRuntimeException("Command not allowed.")
+                throw CordaRuntimeException("Command not allowed.")
             }
         }
     }

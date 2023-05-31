@@ -1,6 +1,6 @@
 package com.r3.developers.csdetemplate.governance.workflows
 
-import com.r3.developers.csdetemplate.utxoexample.contracts.ProposalContract
+import com.r3.developers.csdetemplate.utxoexample.contracts.ProposalCommand
 import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import com.r3.developers.csdetemplate.governance.workflows.FinalizeProposalSubFlow
 import net.corda.v5.application.flows.*
@@ -62,25 +62,36 @@ class CreateProposalFlow: ClientStartableFlow {
                 participants = keys
             )
             // Obtain the notary.
+//            val notary = notaryLookup.notaryServices.single()
             val notary = notaryLookup.notaryServices.single()
-            // Use UTXOTransactionBuilder to build up the draft transaction.
+
+
             val txBuilder= ledgerService.createTransactionBuilder()
                 .setNotary(notary.name)
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(proposalState)
-                .addCommand(ProposalContract.Create())
+                .addCommand(ProposalCommand.Propose)
             // Only the proposer has to sign off on this, as it is their proposal
                 .addSignatories(myInfo.ledgerKeys.first())
 
             val signedTransaction = txBuilder.toSignedTransaction()
 
-            var names =  memberLookup.lookup().map {
+            val beforeNames = memberLookup.lookup()
+
+            val names =  memberLookup.lookup().filter {
+                it.name.compareTo(notary.name)!=0
+            }.map {
                 it.name
             }
-            names = names - notary.name
-            // temporary
-            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,  listOf(names[0],names[1],names[2], names[3])))
 
+//            println(names)
+
+
+            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,listOf(names[0],names[1],names[2])))
+
+
+
+//            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,names))
         }
         // Catch any exceptions, log them and rethrow the exception.
         catch (e: Exception) {
@@ -91,15 +102,3 @@ class CreateProposalFlow: ClientStartableFlow {
 }
 
 
-/*
-RequestBody for triggering the flow via REST:
-{
-    "clientRequestId": "create-1",
-    "flowClassName": "com.r3.developers.csdetemplate.utxoexample.workflows.CreateNewChatFlow",
-    "requestBody": {
-        "chatName":"Chat with Bob",
-        "otherMember":"CN=Bob, OU=Test Dept, O=R3, L=London, C=GB",
-        "message": "Hello Bob"
-        }
-}
- */

@@ -1,6 +1,9 @@
 package com.r3.developers.csdetemplate.governance.workflows
 
 import com.r3.developers.csdetemplate.utxoexample.contracts.KudosContract
+import com.r3.developers.csdetemplate.utxoexample.contracts.ProposalCommand
+import com.r3.developers.csdetemplate.utxoexample.contracts.VoteCommand
+
 import com.r3.developers.csdetemplate.utxoexample.contracts.ProposalContract
 import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import com.r3.developers.csdetemplate.utxoexample.states.VoteState
@@ -70,11 +73,23 @@ class ReconcileVotesFlow: ClientStartableFlow {
                 it.ref
             }
 
+            println("For ${favour}")
+            println("Against: ${oppose}")
+
             val proposalStateAndRef = ledgerService.findUnconsumedStatesByType(ProposalState::class.java).singleOrNull(){
                 it.state.contractState.id == flowArgs.id
             }?: throw CordaRuntimeException("Could not find the proposal state")
             consumableStates.plus(proposalStateAndRef)
-            val newState = proposalStateAndRef.state.contractState.setVotes(favour,oppose)
+//            val newState = proposalStateAndRef.state.contractState.setVotes(favour,oppose)
+
+            val newState = ProposalState(
+                id=flowArgs.id,
+                proposalName = proposalStateAndRef.state.contractState.proposalName,
+                proposer = proposalStateAndRef.state.contractState.proposer,
+                favour = favour,
+                oppose = oppose,
+                participants = proposalStateAndRef.state.contractState.participants
+            )
             // Obtain the notary.
             val notary = notaryLookup.notaryServices.single()
             // Use UTXOTransactionBuilder to build up the draft transaction.
@@ -83,8 +98,10 @@ class ReconcileVotesFlow: ClientStartableFlow {
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addInputStates(consumableStates)
                 .addOutputState(newState)
-                .addCommand(ProposalContract.Update())
+                .addCommand(ProposalCommand.Reconcile)
+                .addCommand(VoteCommand.Spend)
                 .addSignatories(myInfo.ledgerKeys.first())
+
             val signedTransaction = txBuilder.toSignedTransaction()
 
             var names =  memberLookup.lookup().map {
@@ -92,7 +109,7 @@ class ReconcileVotesFlow: ClientStartableFlow {
             }
             names = names - notary.name
             // temporary
-            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction,  listOf(names[0],names[1],names[2], names[3])))
+            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, listOf(names[0],names[1],names[2])))
         }
         // Catch any exceptions, log them and rethrow the exception.
         catch (e: Exception) {

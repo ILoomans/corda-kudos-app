@@ -1,7 +1,7 @@
 package com.r3.developers.csdetemplate.governance.workflows
 
-import com.r3.developers.csdetemplate.utxoexample.contracts.KudosContract
-import com.r3.developers.csdetemplate.utxoexample.contracts.VoteContract
+import com.r3.developers.csdetemplate.utxoexample.contracts.*
+
 import com.r3.developers.csdetemplate.utxoexample.states.KudosState
 import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import com.r3.developers.csdetemplate.utxoexample.states.VoteState
@@ -10,7 +10,6 @@ import net.corda.v5.application.marshalling.JsonMarshallingService
 import net.corda.v5.application.membership.MemberLookup
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.exceptions.CordaRuntimeException
-import net.corda.v5.base.types.MemberX500Name
 
 import net.corda.v5.ledger.common.NotaryLookup
 import net.corda.v5.ledger.utxo.UtxoLedgerService
@@ -21,7 +20,7 @@ import java.util.*
 
 
 // A class to hold the deserialized arguments required to start the flow.
-data class VoteForProposalArgs(val kudos: List<UUID>, val proposalId: UUID)
+data class VoteForProposalArgs(val kudos: List<UUID>, val proposalId: UUID, val favour: Boolean)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class VoteForProposalFlow: ClientStartableFlow {
@@ -57,18 +56,14 @@ class VoteForProposalFlow: ClientStartableFlow {
             val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, VoteForProposalArgs::class.java)
             val myInfo = memberLookup.myInfo()
             val keys = memberLookup.lookup()
-
             log.info(keys.toString())
-
             val states = ledgerService.findUnconsumedStatesByType(KudosState::class.java)
-
             val inputStates = states.filter {
                 val id: UUID = it.state.contractState.id
                 flowArgs.kudos.contains(id)
             }.map {
                 it.ref
             }
-
             // need to get the latest unconsumed state of the proposal
             val stateAndRef = ledgerService.findUnconsumedStatesByType(ProposalState::class.java).singleOrNull {
                 it.state.contractState.id == flowArgs.proposalId
@@ -77,10 +72,12 @@ class VoteForProposalFlow: ClientStartableFlow {
             val proposer = memberLookup.lookup(stateAndRef.state.contractState.proposer)
                 ?: throw CordaRuntimeException("Proposer does not exit")
 
+            val f = if(flowArgs.favour) flowArgs.kudos.size else 0
+            val o = if(flowArgs.favour) 0 else flowArgs.kudos.size
             val voteState = VoteState(
                 proposalId=flowArgs.proposalId,
-                favour= 0,
-                oppose= 0,
+                favour= f,
+                oppose= o,
                 participants = listOf(myInfo.ledgerKeys.first(), proposer.ledgerKeys.first())
             )
             // Obtain the notary.
@@ -92,7 +89,10 @@ class VoteForProposalFlow: ClientStartableFlow {
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(voteState)
                 .addInputStates(inputStates)
-                .addCommand(VoteContract.Vote())
+                .addCommand(VoteCommand.Vote)
+                .addCommand(KudosCommand.Spend)
+                .addCommand(ProposalCommand.Vote)
+                // only the owner needs to sign
                 .addSignatories(voteState.participants)
             val signedTransaction = txBuilder.toSignedTransaction()
             return flowEngine.subFlow(FinalizeVoteSubFlow(signedTransaction,proposer.name))
