@@ -43,7 +43,9 @@ class ProposalContract: Contract {
             is ProposalCommand.Reconcile -> {
                 // TODO: Add appropriate commands here
                 // in this case it is being used as the input
-                val input = transaction.inputContractStates.single() as ProposalState
+                val input = transaction.inputContractStates.filterIsInstance<ProposalState>().singleOrNull()?:
+                throw Error("zero or many proposal states found")
+
                 "Reconciler must be owner of the contract" using transaction.signatories.contains(input.proposer)
 
                 // TODO: Add a correct votes tally
