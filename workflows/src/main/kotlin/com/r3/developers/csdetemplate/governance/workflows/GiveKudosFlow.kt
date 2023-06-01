@@ -76,7 +76,7 @@ class GiveKudosFlow: ClientStartableFlow {
                 .setTimeWindowBetween(Instant.now(), Instant.now().plusMillis(Duration.ofDays(1).toMillis()))
                 .addOutputState(kudosState)
                 .addCommand(KudosCommand.Issue)
-                .addSignatories(kudosState.participants)
+                .addSignatories(listOf(myInfo.ledgerKeys.first()))
             // Convert the transaction builder to a UTXOSignedTransaction. Verifies the content of the
             // UtxoTransactionBuilder and signs the transaction with any required signatories that belong to
             // the current node.
@@ -85,7 +85,7 @@ class GiveKudosFlow: ClientStartableFlow {
             // If successful the flow will return a String of the created transaction id,
             // If successful the flow will return a String of the created transaction id,
             // if not successful it will return an error message.
-            return flowEngine.subFlow(FinalizeKudosSubFlow(signedTransaction, otherMember.name))
+            return flowEngine.subFlow(FinalizeKudosSubFlow(signedTransaction, listOf(myInfo.name,otherMember.name)))
 
         }
         // Catch any exceptions, log them and rethrow the exception.

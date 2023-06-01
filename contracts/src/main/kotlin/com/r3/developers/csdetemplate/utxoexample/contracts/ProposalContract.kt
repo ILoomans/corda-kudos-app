@@ -34,7 +34,7 @@ class ProposalContract: Contract {
             // Rules applied only to transactions with the Create Command.
             is ProposalCommand.Propose -> {
                 // TODO: Add appropriate commands here
-                val input = transaction.inputContractStates.single() as ProposalState
+                val input = transaction.outputContractStates.single() as ProposalState
 
                 // make sure that favour and oppose is set to 0
                 "Favour should be set to 0" using (input.favour==0)

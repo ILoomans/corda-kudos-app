@@ -17,17 +17,7 @@ class KudosContract: Contract {
     // verify() function is used to apply contract rules to the transaction.
     override fun verify(transaction: UtxoLedgerTransaction) {
 
-        // Ensures that there is only one command in the transaction
         val command = transaction.commands.filterIsInstance<KudosCommand>().single()
-
-        // Applies a universal constraint (applies to all transactions irrespective of command)
-//        "The output state should have two and only two participants." using {
-//            val output = transaction.outputContractStates.first() as KudosState
-//            output.participants.size== 2
-
-//        if(command is)
-//        }
-        // Switches case based on the command
         when(command) {
             // Rules applied only to transactions with the Create Command.
             is KudosCommand.Issue -> {
@@ -36,7 +26,9 @@ class KudosContract: Contract {
                 val output = transaction.outputContractStates.single() as KudosState
                 // Cannot give award kudos to yourself
                 "Cannot give the kudos to yourself" using(!transaction.signatories.contains(output.owner))
-//                "Owner should be one of the participants of the Kudos" using (transaction.outputContractStates.first().owner)
+//                "Owner should be one of the participants of the kudos" using(!output.participants.contains(output.owner))
+//                "Owner should be one of the owners of the kudos" using(output.participants.filter {it.equals(output.owner)}.isNotEmpty())
+                "Owner should be one of the participants of the Kudos" using (output.participants.filter{it.toString()==output.owner.toString()}.isNotEmpty())
             }
             is KudosCommand.Spend -> {
                 val input = transaction.inputContractStates.single() as KudosState

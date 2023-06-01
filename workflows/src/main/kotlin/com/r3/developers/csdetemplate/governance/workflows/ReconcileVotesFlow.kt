@@ -104,10 +104,11 @@ class ReconcileVotesFlow: ClientStartableFlow {
 
             val signedTransaction = txBuilder.toSignedTransaction()
 
-            var names =  memberLookup.lookup().map {
+            val names = memberLookup.lookup().filter {
+                it.memberProvidedContext["corda.notary.service.name"] != notary.name.toString()
+            }.map {
                 it.name
             }
-            names = names - notary.name
             // temporary
             return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, listOf(names[0],names[1],names[2])))
         }

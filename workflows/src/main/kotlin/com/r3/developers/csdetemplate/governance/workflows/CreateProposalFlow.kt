@@ -77,10 +77,8 @@ class CreateProposalFlow: ClientStartableFlow {
 
             val signedTransaction = txBuilder.toSignedTransaction()
 
-            val beforeNames = memberLookup.lookup()
-
-            val names =  memberLookup.lookup().filter {
-                it.name.compareTo(notary.name)!=0
+            val names = memberLookup.lookup().filter {
+                it.memberProvidedContext["corda.notary.service.name"] != notary.name.toString()
             }.map {
                 it.name
             }

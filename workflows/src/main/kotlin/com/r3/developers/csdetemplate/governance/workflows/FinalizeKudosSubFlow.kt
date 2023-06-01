@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 
 @InitiatingFlow(protocol = "finalize-kudos-protocol")
-class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction, private val otherMember: MemberX500Name): SubFlow<String> {
+class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction, private val otherMembers: List<MemberX500Name>): SubFlow<String> {
 
     private companion object {
         val log = LoggerFactory.getLogger(this::class.java.enclosingClass)
@@ -33,7 +33,9 @@ class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction,
         log.info("FinalizeKudosFlow.call() called")
 
         // Initiates a session with the other Member.
-        val session = flowMessaging.initiateFlow(otherMember)
+        val sessions = otherMembers.map{
+            flowMessaging.initiateFlow(it)
+        }
 
         return try {
             // Calls the Corda provided finalise() function which gather signatures from the counterparty,
@@ -41,7 +43,7 @@ class FinalizeKudosSubFlow(private val signedTransaction: UtxoSignedTransaction,
             // On success returns the id of the transaction created. (This is different to the ChatState id)
             val finalizedSignedTransaction = ledgerService.finalize(
                 signedTransaction,
-                listOf(session)
+                sessions
             )
             // Returns the transaction id converted to a string.
             finalizedSignedTransaction.transaction.id.toString().also {

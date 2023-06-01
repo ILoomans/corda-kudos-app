@@ -42,4 +42,8 @@ data class KudosState(
     override fun getParticipants():List<PublicKey>{
         return participants
     }
+
+    // fun isParticipant(who: PublicKey): Boolean {
+    //     return participants.contains(who)
+    // }
 }
