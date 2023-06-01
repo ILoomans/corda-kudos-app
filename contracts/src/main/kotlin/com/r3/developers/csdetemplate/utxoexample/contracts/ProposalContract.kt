@@ -34,18 +34,19 @@ class ProposalContract: Contract {
             // Rules applied only to transactions with the Create Command.
             is ProposalCommand.Propose -> {
                 // TODO: Add appropriate commands here
-                val input = transaction.outputContractStates.single() as ProposalState
-
-                // make sure that favour and oppose is set to 0
-                "Favour should be set to 0" using (input.favour==0)
-                "Oppose should be set to 0" using (input.oppose==0)
-
-//                "When command is Create there should be no input states." using (transaction.inputContractStates.isEmpty())
-//                "When command is Create there should be one and only one output state." using (transaction.outputContractStates.size == 1)
+                val output = transaction.outputContractStates.single() as ProposalState
+                "Favour should be set to 0" using (output.favour==0)
+                "Oppose should be set to 0" using (output.oppose==0)
+                "Proposer should be the signer of the contract" using (transaction.signatories.contains(output.proposer))
             }
             // Rules applied only to transactions with the Update Command.
             is ProposalCommand.Reconcile -> {
                 // TODO: Add appropriate commands here
+                // in this case it is being used as the input
+                val input = transaction.inputContractStates.single() as ProposalState
+                "Reconciler must be owner of the contract" using transaction.signatories.contains(input.proposer)
+
+                // TODO: Add a correct votes tally
 
             }
 
