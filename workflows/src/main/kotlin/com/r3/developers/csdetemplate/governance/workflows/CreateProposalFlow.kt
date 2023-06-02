@@ -82,15 +82,7 @@ class CreateProposalFlow: ClientStartableFlow {
             }.map {
                 it.name
             }
-
-//            println(names)
-
-
-            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,listOf(names[0],names[1],names[2])))
-
-
-
-//            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,names))
+            return flowEngine.subFlow(FinalizeProposalSubFlow(signedTransaction,names))
         }
         // Catch any exceptions, log them and rethrow the exception.
         catch (e: Exception) {

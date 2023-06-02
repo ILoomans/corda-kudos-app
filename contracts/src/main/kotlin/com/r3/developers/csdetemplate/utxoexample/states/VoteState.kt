@@ -20,6 +20,8 @@ data class VoteState(
     // Opposed
     val oppose: Int,
     // participants
+    // owner of the vote
+    val owner: PublicKey,
     private val participants: List<PublicKey>
 
 ): ContractState {

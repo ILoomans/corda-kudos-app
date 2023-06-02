@@ -17,8 +17,8 @@ import java.util.*
 // that the underlying Jackson serializer recognises, hence creating a DTO style object which consists only of Strings
 // and a UUID. It is possible to create custom serializers for the JsonMarshallingService, but this beyond the scope
 // of this simple example.
-data class ListVotesResult(val id: UUID, val proposalId: UUID, val favour: Int, val oppose: Int)
-data class ListVotesArgs(val proposalId: UUID)
+data class ListVotesResult(val id: UUID, val proposalId: UUID, val favour: Int, val oppose: Int, val owner: String)
+//data class ListVotesArgs(val proposalId: UUID)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class ListVotesFlow : ClientStartableFlow {
@@ -38,19 +38,18 @@ class ListVotesFlow : ClientStartableFlow {
     override fun call(requestBody: ClientRequestBody): String {
 
         log.info("ListKudosFlow.call() called")
-        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, ListVotesArgs::class.java)
+//        val flowArgs = requestBody.getRequestBodyAs(jsonMarshallingService, ListVotesArgs::class.java)
 
         // Queries the VNode's vault for unconsumed states and converts the result to a serializable DTO.
         val states = ledgerService.findUnconsumedStatesByType(VoteState::class.java)
 
-        val result = states.filter{
-            it.state.contractState.proposalId==flowArgs.proposalId
-        }.map {
+        val result = states.map {
             ListVotesResult(
                 id= it.state.contractState.id,
                 proposalId= it.state.contractState.proposalId,
                 favour = it.state.contractState.favour,
-                oppose = it.state.contractState.oppose
+                oppose = it.state.contractState.oppose,
+                owner = it.state.contractState.owner.toString()
             )
         }
 

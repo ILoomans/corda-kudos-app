@@ -1,6 +1,6 @@
 package com.r3.developers.csdetemplate.utxoexample.contracts
 
-import com.r3.developers.csdetemplate.utxoexample.states.KudosState
+import com.r3.developers.csdetemplate.utxoexample.states.VoteState
 import com.r3.developers.csdetemplate.utxoexample.states.ProposalState
 import net.corda.v5.base.exceptions.CordaRuntimeException
 import net.corda.v5.ledger.utxo.Command
@@ -41,19 +41,20 @@ class ProposalContract: Contract {
             }
             // Rules applied only to transactions with the Update Command.
             is ProposalCommand.Reconcile -> {
-                // TODO: Add appropriate commands here
-                // in this case it is being used as the input
-                val input = transaction.inputContractStates.filterIsInstance<ProposalState>().singleOrNull()?:
-                throw Error("zero or many proposal states found")
-
-                "Reconciler must be owner of the contract" using transaction.signatories.contains(input.proposer)
-
-                // TODO: Add a correct votes tally
+                val inputs = transaction.inputContractStates.filterIsInstance<VoteState>()
+                val proposalInputs = transaction.inputContractStates.filterIsInstance<ProposalState>()
+                val output = transaction.outputContractStates.single() as ProposalState
+                inputs.map {
+                    "Votes must be for the proposal" using (it.proposalId==output.id)
+                }
+                "Should be only one input" using (proposalInputs.size==1)
+                "Reconciler must be owner of the contract" using transaction.signatories.contains(proposalInputs[0].proposer)
 
             }
 
             is ProposalCommand.Vote -> {
-                //TODO: Add something here
+                // This check is needed for the when a vote is cast
+                // No necessary checks as they are all handled on the vote state
 
             }
 

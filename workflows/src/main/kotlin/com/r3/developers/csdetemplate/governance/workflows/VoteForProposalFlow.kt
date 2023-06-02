@@ -78,7 +78,8 @@ class VoteForProposalFlow: ClientStartableFlow {
                 proposalId=flowArgs.proposalId,
                 favour= f,
                 oppose= o,
-                participants = listOf(myInfo.ledgerKeys.first(), proposer.ledgerKeys.first())
+                participants = listOf(myInfo.ledgerKeys.first(), proposer.ledgerKeys.first()),
+                owner = myInfo.ledgerKeys.first()
             )
             // Obtain the notary.
             val notary = notaryLookup.notaryServices.single()

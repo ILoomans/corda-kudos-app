@@ -18,7 +18,7 @@ import java.time.Duration
 import java.time.Instant
 
 // A class to hold the deserialized arguments required to start the flow.
-data class GiveKudosArgs(val recipient: String)
+data class GiveKudosArgs(val reason: String, val recipient: String)
 
 // See Chat CorDapp Design section of the getting started docs for a description of this flow.
 class GiveKudosFlow: ClientStartableFlow {
@@ -65,6 +65,7 @@ class GiveKudosFlow: ClientStartableFlow {
             // This is creating the kudos state
             val kudosState = KudosState(
                 owner = otherMember.ledgerKeys.first(),
+                reason = flowArgs.reason,
                 participants = listOf(myInfo.ledgerKeys.first(), otherMember.ledgerKeys.first())
             )
             // Obtain the notary.
@@ -85,7 +86,7 @@ class GiveKudosFlow: ClientStartableFlow {
             // If successful the flow will return a String of the created transaction id,
             // If successful the flow will return a String of the created transaction id,
             // if not successful it will return an error message.
-            return flowEngine.subFlow(FinalizeKudosSubFlow(signedTransaction, listOf(myInfo.name,otherMember.name)))
+            return flowEngine.subFlow(FinalizeKudosSubFlow(signedTransaction, listOf(otherMember.name)))
 
         }
         // Catch any exceptions, log them and rethrow the exception.

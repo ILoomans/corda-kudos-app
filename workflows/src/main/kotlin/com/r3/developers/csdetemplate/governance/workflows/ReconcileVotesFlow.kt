@@ -65,21 +65,21 @@ class ReconcileVotesFlow: ClientStartableFlow {
             // We will consume these states
             var favour = 0;
             var oppose = 0;
+            val proposalStateAndRef = ledgerService.findUnconsumedStatesByType(ProposalState::class.java).singleOrNull(){
+                it.state.contractState.id == flowArgs.id
+            }?: throw CordaRuntimeException("Could not find the proposal state")
             val consumableStates = stateAndRef.filter{
                 it.state.contractState.proposalId==flowArgs.id
             }.map{
                 favour += it.state.contractState.favour
                 oppose += it.state.contractState.oppose
                 it.ref
-            }
+            }.plus(proposalStateAndRef.ref)
 
             println("For ${favour}")
             println("Against: ${oppose}")
 
-            val proposalStateAndRef = ledgerService.findUnconsumedStatesByType(ProposalState::class.java).singleOrNull(){
-                it.state.contractState.id == flowArgs.id
-            }?: throw CordaRuntimeException("Could not find the proposal state")
-            consumableStates.plus(proposalStateAndRef)
+
 //            val newState = proposalStateAndRef.state.contractState.setVotes(favour,oppose)
 
             val newState = ProposalState(
@@ -109,8 +109,8 @@ class ReconcileVotesFlow: ClientStartableFlow {
             }.map {
                 it.name
             }
-            // temporary
-            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, listOf(names[0],names[1],names[2])))
+            // Only need to send this back to me
+            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, listOf(myInfo.name)))
         }
         // Catch any exceptions, log them and rethrow the exception.
         catch (e: Exception) {

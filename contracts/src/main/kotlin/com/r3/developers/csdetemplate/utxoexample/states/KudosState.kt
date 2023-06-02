@@ -36,6 +36,8 @@ data class KudosState(
     //A map from the user to the amount of kudos that they have
     // Change to public key
     val owner: PublicKey,
+    // Reason
+    val reason: String,
     //The participants to the chat,represented by their publickey.
     private val participants: List<PublicKey>): ContractState {
 
