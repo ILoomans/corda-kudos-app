@@ -25,7 +25,6 @@ class VoteContract: Contract {
         when(command) {
             // Rules applied only to transactions with the Create Command.
             is VoteCommand.Vote -> {
-                // TODO: ADD VOTE CONSTRAINTS
                 // Make sure that they own the
                 val inputs = transaction.inputContractStates.filterIsInstance<KudosState>()
                 val proposalOutput = transaction.outputContractStates.single() as VoteState

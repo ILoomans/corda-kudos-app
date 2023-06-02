@@ -15,6 +15,7 @@ import kotlin.collections.LinkedHashMap
 // We need to verify how many kudos a person has
 // Centralize the information
 // Global state isnt great
+// Global state isnt great
 // Thats why this bit should represet 1 kudos
 // On the creation a kudos
 // Can be spent on the proposal 

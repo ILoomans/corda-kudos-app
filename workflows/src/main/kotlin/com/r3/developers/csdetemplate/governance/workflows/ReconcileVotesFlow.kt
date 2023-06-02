@@ -73,7 +73,7 @@ class ReconcileVotesFlow: ClientStartableFlow {
             }.map{
                 favour += it.state.contractState.favour
                 oppose += it.state.contractState.oppose
-                it.ref
+                it.ref;
             }.plus(proposalStateAndRef.ref)
 
             println("For ${favour}")
@@ -110,7 +110,7 @@ class ReconcileVotesFlow: ClientStartableFlow {
                 it.name
             }
             // Only need to send this back to me
-            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, listOf(myInfo.name)))
+            return flowEngine.subFlow(FinalizeVoteReconciliationFlow(signedTransaction, names))
         }
         // Catch any exceptions, log them and rethrow the exception.
         catch (e: Exception) {
